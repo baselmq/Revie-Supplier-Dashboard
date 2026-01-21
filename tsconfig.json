@@ -1,0 +1,3 @@
+{
+  "extends": "@revie-supplier-dashboard/config/tsconfig.base.json"
+}
