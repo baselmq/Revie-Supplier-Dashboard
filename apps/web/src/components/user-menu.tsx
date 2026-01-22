@@ -2,6 +2,8 @@
 
 import { ChevronDown, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
+import type { Route } from "next";
+import { useLocalStorage } from "usehooks-ts";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,16 +14,23 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Button } from "./ui/button";
+import type { Supplier } from "@/types/supplier";
 
-interface UserMenuProps {
-  user?: { name: string; email: string };
-}
-
-export default function UserMenu({ user }: UserMenuProps) {
+export default function UserMenu() {
   const router = useRouter();
+  const [suppliers] = useLocalStorage<Supplier[]>("supplier", [], {
+    initializeWithValue: false,
+  });
+  const [session, setSession] = useLocalStorage<{ id: string } | null>(
+    "session",
+    null,
+    { initializeWithValue: false },
+  );
+
+  const user = suppliers.find((supplier) => supplier.id === session?.id);
 
   const userInitials =
-    user?.name
+    user?.fullName
       ?.split(" ")
       .map((n) => n[0])
       .join("")
@@ -45,7 +54,7 @@ export default function UserMenu({ user }: UserMenuProps) {
             </Avatar>
             <div className="hidden text-start sm:flex sm:flex-col">
               <span className="font-medium text-sm leading-none transition-colors duration-200 group-hover:text-foreground">
-                {user?.name}
+                {user?.fullName}
               </span>
               <span className="text-muted-foreground text-xs transition-colors duration-200 group-hover:text-muted-foreground/80">
                 {user?.email}
@@ -59,14 +68,17 @@ export default function UserMenu({ user }: UserMenuProps) {
           className="fade-in-0 zoom-in-95 slide-in-from-top-2 w-60 animate-in"
         >
           <DropdownMenuLabel className="flex flex-col gap-1 py-3">
-            <span className="font-semibold text-sm">{user?.name}</span>
+            <span className="font-semibold text-sm">{user?.fullName}</span>
             <span className="text-muted-foreground text-xs">{user?.email}</span>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
 
           <DropdownMenuItem
             className="cursor-pointer text-destructive transition-colors duration-150 hover:bg-destructive/10 hover:text-destructive focus:bg-destructive/10 focus:text-destructive"
-            onClick={() => {}}
+            onClick={() => {
+              setSession(null);
+              router.push("/login" as Route);
+            }}
           >
             <LogOut className="size-4 text-destructive transition-transform duration-150 group-hover:scale-110" />
             <span>Logout</span>
